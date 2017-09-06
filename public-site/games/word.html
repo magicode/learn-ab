@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>
+            משחק  - מילים
+        </title>
+        
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js" ></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+        <style type="text/css">
+            @font-face {
+                font-family: 'Frank Ruhl Libre';
+                font-style: normal;
+                font-weight: 300;
+                src: url('/fonts/FrankRuhlLibre/FrankRuhlLibre-Medium.ttf') format('truetype');
+            }
+
+            .noselect {
+              -webkit-touch-callout: none; /* iOS Safari */
+                -webkit-user-select: none; /* Safari */
+                 -khtml-user-select: none; /* Konqueror HTML */
+                   -moz-user-select: none; /* Firefox */
+                    -ms-user-select: none; /* Internet Explorer/Edge */
+                        user-select: none; /* Non-prefixed version, currently
+                                              supported by Chrome and Opera */
+            }
+
+            #main-screen{
+                font-family: 'Frank Ruhl Libre';
+                direction: rtl;
+            }
+            
+            #main-screen{
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+            }
+            
+            #main-screen .screen{
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                display: none;
+            }
+            
+            .screen-center{
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            #start-button{
+                height: 80px;
+                width: 200px;
+                font-size: 52px;
+                background-color: #4ae6d6;
+                color: #7423af;
+                cursor: pointer;
+            }
+            
+            #screen-ask-up{
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 0;
+                height: 50%;
+            }
+            
+            #screen-ask-dots{
+                height: 30px;
+                
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+            } 
+            
+            #screen-ask-dots div{
+                border-radius: 100%;
+                border: 1px solid #111;
+                height: 26px;
+                width: 26px;
+            }
+            
+            #screen-ask-dots div.fill{
+                background-color: #49ea06;
+            }
+            
+            #currWord {
+                text-align: center;
+                font-size: 24vh;
+                padding: 24px;
+            }
+            
+            #options{
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                height: 50%;
+                
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-around;
+            }
+ 
+            #options .option{
+                width: 5000px;
+                height: 5000px;
+                max-width: 24vw;
+                max-height: 48vh;
+                margin: 1vh 0;
+                background: #ffd96f;
+                
+                padding: 10px;
+                border-radius: 5px;
+                cursor: pointer;
+                
+                display: flex;
+                text-align: center;
+                justify-content: center;
+            }
+            
+            #options .option:hover{
+                background: #6fff7a;
+            }
+            
+            #options .option img{
+                max-height: 100%;
+                max-width: 100%;
+                margin: auto;
+                display: block;
+            }
+            
+            
+            #screen-res{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            
+            #screen-end-res .lable{
+                top: 0;
+                left: 0;
+                right: 0; 
+                width: 100%;
+                height: 20%;
+                position: absolute;
+                
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                
+                font-size: 10vh;
+            }
+            
+            #screen-end-res .video{
+                left: 0;
+                right: 0;
+                bottom: 2px;
+                width: 100%;
+                height: 80%;
+                position: absolute;
+            }
+            
+        </style>
+    </head>
+    <body>
+        <div hidden="hidden">
+            <span id="template-option" class="option"  > 
+                <img ></img>
+            </span>
+        </div>
+        <div id="main-screen" class="noselect">
+            <div id="screen-start" class="screen screen-start">
+                <div class="screen-center">
+                    <button id="start-button">
+                        התחל
+                    </button>
+                </div>
+            </div>
+            <div id="screen-ask" class="screen screen-ask">
+                <div id="screen-ask-up">
+                    <div id="screen-ask-dots">
+                    </div>
+                    <h2 id="currWord"></h2>
+                </div>
+                <div id="options" >
+                </div>
+            </div>
+            <div id="screen-res" class="screen screen-res">
+                <div class="screen-center">
+                    <div id="res-worng">
+                        <img src="/media/images/cry.gif"></img>
+                    </div>
+                    <div id="res-success">
+                        <img id="res-success-img"></img>
+                    </div>
+                </div>
+            </div>
+            <div id="screen-end-res" class="screen screen-end-res">
+                <h1 class="lable">
+                    כָּל הַכָּבוֹד!!!
+                </h1>
+                <video id="video-end" class="video" autoplay loop></video> 
+            </div>
+        </div>
+        
+        <script type="text/javascript">
+            
+            /* global $ */
+            
+            var listHeppyImages = [
+                'happy-1.gif',
+                'happy-2.gif',
+                'happy-3.gif',
+                'happy-4.gif',
+                'happy-5.gif',
+                'happy-6.gif',
+                'happy-7.gif',
+                'happy-8.gif',
+                'happy-9.png',
+                'happy-10.gif',
+            ];
+            
+            var listHeppySounds = [
+                'success-1.mp3',
+                'success-2.mp3',
+                'success-3.mp3',
+                'success-4.mp3',
+                'success-5.mp3',
+                'success-6.mp3',
+                'success-7.mp3',
+                'success-8.mp3',
+                'success-9.mp3',
+                'success-10.mp3',
+                'success-11.mp3',
+                'success-12.mp3',
+            ];
+            
+            var listFinishVideo = [
+                'finish-1.mp4',
+                'finish-2.mp4',
+                'finish-3.mp4',
+                'finish-4.mp4',
+            ];
+            
+            var listWord = []; 
+            
+            function loadWords(){
+                $.ajax('/media/word-1.txt').always(function(data){
+                    
+                    var list = 
+                    (data || '').split(/[\n\r]#/g).map(function(item){
+                        var lines = item.trim().split(/[\n\r]+/g);
+                        var obj = {};
+                        obj.word = lines[0];
+                        obj.wordImage = lines[1];
+                        return obj.word && obj.wordImage && obj;
+                    }).filter(function(item){
+                        return item;
+                    });
+                    
+                    listWord = list;
+                    start();
+                });
+            }
+            
+            var countDots = 30;
+            
+            for(var i =0;i<countDots;i++){
+                $("<div>").appendTo($("#screen-ask-dots"));
+            }
+            
+            function start(){
+                $("#screen-start").show();
+                
+            }
+            
+            function randFromArray(array){
+                return array[Math.floor(array.length * Math.random())];
+            }
+            
+            function randWord(){
+                return randFromArray(listWord);
+            }
+            
+            var countSuccess = 0;
+            
+            function getStep(){
+                
+                var curr = randWord() ;
+                var options = [];
+                options.push({ o: curr , r: Math.random() });
+                for(var j =0 ; j<3;j++){
+                    options.push({ o: randWord() , r: Math.random() });
+                }
+                options = options.sort(function(a,b){ return a.r - b.r ;}).map(function(i){ return i.o; });
+                
+                return { curr: curr, options: options };
+            }
+            
+            function initSteps(){
+                countSuccess = 0;
+                $("#screen-ask-dots > div").removeClass("fill");
+                nextStep();
+            }
+            
+            function endStep(){
+                
+                $("#video-end").attr('src','/media/video/' + randFromArray(listFinishVideo));
+                
+                (new Audio("/media/sound/finish-1.mp3")).play();
+                
+                $("#main-screen .screen").hide();
+                $("#screen-end-res").show();
+                
+                
+                //$("#screen-end-res").one('click',function(){
+                //    //initSteps();
+                //});
+            }
+            
+            function resStep(curr){
+                
+                countSuccess = Math.max(0, countSuccess + (curr.success ? 1 : -1));
+                
+                $("#screen-ask-dots > div").removeClass("fill").each(function(index,item){
+                   if(!(index < countSuccess))return;
+                   $(item).addClass('fill');
+                });
+                
+                if(countSuccess == countDots)
+                    return endStep();
+                
+                var player = false;
+                
+                if(curr.success){ 
+                    $("#res-worng").hide();
+                    $("#res-success").show();
+                    $("#res-success-img").attr('src','/media/images/' + randFromArray(listHeppyImages));
+                    player = new Audio("/media/sound/" + randFromArray(listHeppySounds));
+                }else{ 
+                    $("#res-worng").show();
+                    $("#res-success").hide();
+                    
+                    player = new Audio("/media/sound/error.mp3");
+                }
+                
+                $("#screen-res").one('click',function(){
+                    nextStep(); 
+                    player.pause();
+                });
+                
+                player.play();
+                
+                $("#main-screen .screen").hide();
+                $("#screen-res").show();
+            }
+            
+            function nextStep(){
+                
+                var curr = getStep();
+                
+                $("#currWord").text(curr.curr.word);
+                $("#options").empty();
+                
+                var selected = false;
+                
+                function select(sel){
+                    if(selected) return;
+                    
+                    selected = sel;
+                    
+                    curr.success = selected.word == curr.curr.word;
+                    
+                    resStep(curr);
+                }
+                
+                curr.options.forEach(function(opt){
+                    var item = $("#template-option").clone();
+                    item.removeAttr('id');
+                    item.find("img").attr('src','/media/words-images/' + opt.wordImage);
+                    item.on('click',function(){
+                        select(opt);
+                    });
+                    item.appendTo($("#options"));
+                });
+                
+                $("#main-screen .screen").hide();
+                $("#screen-ask").show();
+            }
+            
+            $("#start-button").on('click',function(){
+                initSteps();
+            });
+            
+            loadWords();
+        </script>
+    </body>
+</html>

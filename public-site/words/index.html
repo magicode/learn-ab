@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>
+            תרגול קריאה - הברות מילים
+        </title>
+        
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js" ></script>
+        <style type="text/css">
+
+            @font-face {
+                font-family: 'Frank Ruhl Libre';
+                font-style: normal;
+                font-weight: 300;
+                src: url('/fonts/FrankRuhlLibre/FrankRuhlLibre-Medium.ttf') format('truetype');
+            }
+            
+            
+            body{
+                font-family: 'Frank Ruhl Libre';
+                direction: rtl;
+            }
+            
+            #word{
+                font-family: 'Frank Ruhl Libre';
+                font-size: 40vh;
+                text-align: center;
+                margin: 30px;
+                color: #3c3c3c;
+            }
+            
+            #word .active{
+                color: white;
+                /* text-shadow: 5px 6px 8px #001; */
+                background-color: #7b7b7b;
+            }
+            
+            #counter{
+                font-size: 50px;
+                text-align: center;
+                padding: 0 11px;
+            }
+            
+            #counter-line{
+                border: 1px solid #a9a9a9;
+                height: 30px;
+            }
+            
+            #counter-line-pull{
+                background-color: #2700bd;
+                height: 100%;
+            }
+            
+            #explain{
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                display: flex;
+                text-align: center;
+                justify-content: center;
+                align-items: center;
+            }
+            
+            #explain h1{
+                padding: 20px;
+                border-radius: 5px;
+                background-color: aliceblue;
+                border: 1px solid #4c9bc1;
+                max-width: 500px;
+            }
+            
+        </style>
+        
+        <script type="text/javascript" src="/words/words.js"></script>
+    </head>
+    <body>
+
+        <div id="limit_words">
+            <input type="number" value="5" id="limit_words_val" />
+            <button id="limit_words_click">
+                הגבל מילים
+            </button>
+        </div>
+
+        <div id="word">
+        
+        </div>
+        <div id="counter">
+        
+        </div>
+        <div id="counter-line" hidden="hidden">
+            <div id="counter-line-pull"></div>
+        </div>
+        
+        <div id="explain">
+            <h1>
+                 לחץ על החץ למטה 
+                 "▼"
+                 כדי להתחיל ולעבור בין המילים.
+                 <br>
+                 לחץ על "רווח" כדי לעבור בין ההברות.
+                
+            </h1>
+        </div>
+
+        
+        <script type="text/javascript">
+            
+            
+            var counter = 0;
+            
+            function upCounter(){
+                counter++;
+                $('#counter').text(counter);
+                $('#counter-line-pull').css('width', ((counter/100)*100) + '%' );
+                $('#counter-line').show();
+            }
+            
+            $('#counter').on('click',function() {
+                counter = 0;
+                upCounter();
+            });
+            
+            
+            var mapAB = {};
+            
+            "אבגדהוזחטיכלמנסעפצקרשתםןץףך"
+            .split('').forEach(function(l){
+                mapAB[l] = true;
+            });
+            
+            
+            var mapNikud = {
+                '\u05B8': 2, //Qamats
+                '\u05B7': 2, //Patah
+                '\u05B6': 2, //Segol
+                '\u05B5': 2, //Tsere
+                '\u05B4': 2, //Hiriq
+                '\u05BB': 2, //Qubuts
+                '\u05B9': 3, //Holam
+                '\u05BC': 3, //
+                '\u05B1': 2,
+                '\u05B2': 2,
+                '\u05B3': 2,
+                '\u05B0': 1, //shva
+            };
+            
+            function partWord(word){
+                var list = [];
+                
+                var curr = false;
+                for (var i = 0; i < word.length; i++) {
+                    var char = word[i];
+                    
+                    if(!curr){
+                        curr = { first: true , conent: '' };
+                        list.push(curr);
+                    }else if(mapAB[char]){
+                        curr = { conent: '' };
+                        list.push(curr);
+                    }
+                    
+                    curr.conent += char;
+                    
+                    if(mapNikud[char]){
+                        curr.nikud = char;
+                        curr.nikudCode = mapNikud[char];
+                    }
+                }
+                
+                
+                list.forEach(function(w) {
+                    if( w.nikudCode == 3  && -1 != w.conent.indexOf('ו') ){
+                        w.vov = true;
+                    }
+                });
+                var list1 = [];
+                
+                
+                
+                var last = false;
+                for (var i = 0; i < list.length; i++) {
+                    var ww1 = list[i];
+                    var nextww = list[i + 1] || {};
+                    if(!last){
+                        list1.push(ww1);
+                        last = ww1;
+                        continue;
+                    }
+                    
+                    
+                    if( ww1.vov ){
+                        last.conent += ww1.conent;
+                        last.nikud = ww1.conent;
+                        last.nikudCode = 2;
+                        last = false;
+                    }else if(ww1.conent == 'י' && !nextww.vov ){
+                        last.conent += ww1.conent;
+                        last = false;
+                    }else{
+                        list1.push(ww1);
+                        last = ww1;
+                    }
+                }
+                
+                var list2 = [];
+                
+                var last = false;
+                
+                for (var i = 0; i < list1.length; i++) {
+                    var prev = list1[i - 1] || {};
+                    var ww = list1[i];
+                    
+                    if(ww.nikudCode == 3) ww.nikudCode = 2;
+                    
+                    ww.hardNikud = ww.nikudCode == 2 || (ww.nikudCode == 1 && (ww.first || prev.nikudCode == 1 || -1 != ww.conent.indexOf('י')));
+                    
+                    if(!last){
+                        list2.push(ww);
+                        last = ww;
+                    }else {
+                        if(!last.hardNikud){
+                            last.conent += ww.conent;
+                            last = false;
+                        }else if(ww.hardNikud){
+                            list2.push(ww);
+                            last = ww;
+                        }else{
+                            last.conent += ww.conent;
+                            //last = false;
+                        }
+                    }
+                }
+                
+                return list2;
+            }
+            
+
+            var listWords = window._tora_words.split(/\s+/g);
+            var currListWords = listWords;
+            
+            function rainbow(numOfSteps, step) {
+                // This function generates vibrant, "evenly spaced" colours (i.e. no clustering). This is ideal for creating easily distinguishable vibrant markers in Google Maps and other apps.
+                // Adam Cole, 2011-Sept-14
+                // HSV to RBG adapted from: http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
+                var r, g, b;
+                var h = step / numOfSteps;
+                var i = ~~(h * 6);
+                var f = h * 6 - i;
+                var q = 1 - f;
+                switch(i % 6){
+                    case 0: r = 1; g = f; b = 0; break;
+                    case 1: r = q; g = 1; b = 0; break;
+                    case 2: r = 0; g = 1; b = f; break;
+                    case 3: r = 0; g = q; b = 1; break;
+                    case 4: r = f; g = 0; b = 1; break;
+                    case 5: r = 1; g = 0; b = q; break;
+                }
+                var c = "#" + ("00" + (~ ~(r * 255)).toString(16)).slice(-2) + ("00" + (~ ~(g * 255)).toString(16)).slice(-2) + ("00" + (~ ~(b * 255)).toString(16)).slice(-2);
+                return (c);
+            }
+            
+            function getRandom(array){
+                return array[Math.floor(array.length*Math.random())];
+            }
+            var $word = $('#word');
+            
+            function newWord(){
+                $word.find('span').remove();
+                
+                
+                var a = partWord(getRandom(currListWords));
+                $word._cur = a.length - 1;
+                $word._len = a.length;
+                
+                a.forEach(function(w,i){
+                    $('<span>').attr('index',i).text(w.conent).appendTo($word);
+                });
+                
+                $word.css('color',rainbow(1,Math.random()));
+                //word.style.color = ;//'#'+(Math.random()*0xFFFFFF<<0).toString(16);
+                nextChar();
+                upCounter();
+            }
+            
+            function nextChar(){
+                $("#explain").hide();
+                $word._cur = ($word._cur+1)%$word._len;
+                $word.find('span').removeClass('active');
+                $word.find('span[index=' + $word._cur + ']').addClass('active');
+            }
+            
+            window.document.addEventListener('keyup',function(event){
+                if(event.keyCode == 40) newWord();
+                if(event.keyCode == 32) nextChar();
+            });
+            
+            
+            $("#limit_words_click").on('click',function(){
+                var count = +$("#limit_words_val").val() || 5;
+                
+                var list = [];
+                
+                for (var i = count; i--; ) {
+                    list.push(getRandom(listWords));
+                }
+                
+                currListWords = list;
+                console.log(currListWords);
+                
+                $(this).blur();
+            });
+            
+        </script>
+        
+    </body>
+</html>

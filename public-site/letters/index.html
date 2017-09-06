@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>
+            תרגול קריאה - אותיות
+        </title>
+        
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js" ></script>
+        
+        <style type="text/css">
+
+            @font-face {
+                font-family: 'Frank Ruhl Libre';
+                font-style: normal;
+                font-weight: 300;
+                src: url('/fonts/FrankRuhlLibre/FrankRuhlLibre-Medium.ttf') format('truetype');
+            }
+            
+            body{
+                font-family: 'Frank Ruhl Libre';
+            }
+            
+            #word{
+                font-family: 'Frank Ruhl Libre';
+                font-size: 50vh;
+                text-align: center;
+                margin: 30px;
+                color: #3c3c3c;
+            }
+            
+            #list-nikud{
+                text-align: center;
+                padding-top: 19px;
+                font-family: 'Frank Ruhl Libre';
+            }
+            
+            .nikud,.nikud-reset{
+                font-size: 36px;
+                padding: 3px 10px ;
+                margin: 5px;
+                background-color: #cecece;
+                /*border: #2d6494 1px solid;*/
+                border-radius: 11px;
+                cursor: pointer;
+            }
+            .nikud.active{
+               background-color: #7eccc5;
+            }
+            
+            #counter{
+                font-size: 50px;
+                text-align: center;
+                padding: 0 11px;
+            }
+            
+            #counter-line{
+                border: 1px solid #a9a9a9;
+                height: 30px;
+            }
+            
+            #counter-line-pull{
+                background-color: #2700bd;
+                height: 100%;
+            }
+            
+            #explain{
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                display: flex;
+                text-align: center;
+                justify-content: center;
+                align-items: center;
+            }
+            
+            #explain h1{
+                padding: 20px;
+                border-radius: 5px;
+                background-color: aliceblue;
+                border: 1px solid #4c9bc1;
+                max-width: 500px;
+            }
+            
+        </style>
+    </head>
+    <body>
+        <div id="list-nikud">
+            <span id="nikud-reset" class="nikud-reset">
+                #
+            </span>
+        </div>
+        <div id="word">
+        
+        </div>
+        <div id="counter">
+        
+        </div>
+        <div id="counter-line" hidden="hidden">
+            <div id="counter-line-pull"></div>
+        </div>
+        
+        <div id="explain">
+            <h1>
+                לחץ על "רווח" כדי להתחיל וכדי לעבור לאות הבאה.
+            </h1>
+        </div>
+        
+        <script type="text/javascript">
+            
+            var listAb = [
+                'א',
+                'בּ',
+                'ב',
+                'ג',
+                'ד',
+                'ה',
+                'ו',
+                'ז',
+                'ח',
+                'ט',
+                'י',
+                'כּ',
+                'כ',
+                'ל',
+                'מ',
+                'נ',
+                'ס',
+                'ע',
+                'פּ',
+                'פ',
+                'צ',
+                'ק',
+                'ר',
+                'שׁ',
+                'שׂ',
+                'תּ',
+                'ת'
+            ];
+            
+            var listNikud = [
+                '\u05B8', // Qamats
+                '\u05B7', //Patah
+                '\u05B6', //Segol
+                '\u05B5', //Tsere
+                '\u05B4', //Hiriq
+                '\u05B4י', //Hiriq
+                '\u05BB', //Qubuts
+                '\u05B9', //Holam
+                'ו\u05B9', //Holam
+                //'\u05BC', //Shuruk
+                'ו\u05BC', //Shuruk
+            ];
+            
+            var counter = 0;
+            
+            function upCounter(){
+                counter++;
+                $('#counter').text(counter);
+                $('#counter-line-pull').css('width', ((counter/100)*100) + '%' );
+                $('#counter-line').show();
+            }
+            
+            $('#counter').on('click',function() {
+                counter = 0;
+                upCounter();
+            });
+            
+            $listNikud = $("#list-nikud");
+            
+            listNikud.forEach(function(n){
+                var $span = $("<span>");
+                $span.addClass('nikud').addClass('active').attr('value',n).appendTo($listNikud);
+                if(-1 == n.indexOf('ו')){
+                    $("<span>").css('opacity','0').text('א').appendTo($span);
+                }
+                $("<span>").text(n).appendTo($span);
+            });
+            
+            $("#nikud-reset").on('click',function() {
+                $(this).toggleClass('set');
+            
+                if($(this).hasClass('set'))
+                    $(".nikud").removeClass('active');
+                else
+                    $(".nikud").addClass('active');
+            });
+            
+            $(".nikud").on('click',function(){
+               $(this).toggleClass('active'); 
+            });
+            
+            function rainbow(numOfSteps, step) {
+                // This function generates vibrant, "evenly spaced" colours (i.e. no clustering). This is ideal for creating easily distinguishable vibrant markers in Google Maps and other apps.
+                // Adam Cole, 2011-Sept-14
+                // HSV to RBG adapted from: http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
+                var r, g, b;
+                var h = step / numOfSteps;
+                var i = ~~(h * 6);
+                var f = h * 6 - i;
+                var q = 1 - f;
+                switch(i % 6){
+                    case 0: r = 1; g = f; b = 0; break;
+                    case 1: r = q; g = 1; b = 0; break;
+                    case 2: r = 0; g = 1; b = f; break;
+                    case 3: r = 0; g = q; b = 1; break;
+                    case 4: r = f; g = 0; b = 1; break;
+                    case 5: r = 1; g = 0; b = q; break;
+                }
+                var c = "#" + ("00" + (~ ~(r * 255)).toString(16)).slice(-2) + ("00" + (~ ~(g * 255)).toString(16)).slice(-2) + ("00" + (~ ~(b * 255)).toString(16)).slice(-2);
+                return (c);
+            }
+            
+            function getRandom(array){
+                return array[Math.floor(array.length*Math.random())];
+            }
+            
+            window.document.addEventListener('keyup',function(event){
+                $("#explain").hide();
+                
+                var listNikud = $('.nikud.active').map(function(){
+                   return $(this).attr('value');
+                });
+                var word = window.document.getElementById('word');
+                word.innerText = getRandom(listAb) + (getRandom(listNikud) || '');
+                word.style.color = rainbow(1,Math.random());//'#'+(Math.random()*0xFFFFFF<<0).toString(16);
+                upCounter();
+            });
+            
+        </script>
+        
+    </body>
+</html>
