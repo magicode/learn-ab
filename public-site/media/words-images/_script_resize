@@ -1,0 +1,16 @@
+#!/bin/bash
+
+cd $(dirname "$0")
+
+for line in $(find . -regextype posix-extended -regex '.*\.(jpg|png)'); do 
+
+    filename=`echo $line | sed -e 's/^.*\///g'`
+    
+    newfile="_$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c10)_$filename"
+    echo $newfile
+    
+    convert "$line" -resize 500x500\> "$newfile"
+    rm "$line"
+    mv "$newfile" "$line"
+    
+done
