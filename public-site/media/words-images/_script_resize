@@ -12,7 +12,7 @@ for line in $(find . -regextype posix-extended -regex '.*\.(jpg|png)'); do
     h=$(identify -ping -format '%H' "$line")
     w=$(identify -ping -format '%W' "$line")
     
-    if [ "$h" -gt 500 ] && [ "$w" -gt 500 ]; then
+    if [ "$h" -gt 500 ] || [ "$w" -gt 500 ]; then
         convert "$line" -resize 500x500\> "$newfile" && \
         rm "$line" && \
         mv "$newfile" "$line" 
